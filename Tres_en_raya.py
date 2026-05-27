@@ -1,18 +1,27 @@
-import os
-import time
+import tkinter as tk
+from tkinter import messagebox
 
 # =========================
-# COLORES ANSI
+# COLORES
 # =========================
-ROJO = "\033[91m"
-AZUL = "\033[94m"
-VERDE = "\033[92m"
-AMARILLO = "\033[93m"
-CYAN = "\033[96m"
-RESET = "\033[0m"
+COLOR_FONDO = "#1a1a1a"
+COLOR_TABLERO = "#ffd60a"   # amarillo
+COLOR_NUMEROS = "#ff66cc"   # rosa
+COLOR_X = "#ff3b30"         # rojo
+COLOR_O = "#3a86ff"         # azul
+COLOR_TEXTO = "#ffffff"
 
 # =========================
-# TABLERO
+# VENTANA
+# =========================
+ventana = tk.Tk()
+ventana.title("Tres en Raya")
+ventana.geometry("500x600")
+ventana.config(bg=COLOR_FONDO)
+ventana.resizable(False, False)
+
+# =========================
+# VARIABLES
 # =========================
 tablero = ["1", "2", "3",
            "4", "5", "6",
@@ -20,70 +29,7 @@ tablero = ["1", "2", "3",
 
 turno = "X"
 
-# =========================
-# LIMPIAR PANTALLA
-# =========================
-def limpiar():
-    os.system("cls" if os.name == "nt" else "clear")
-
-# =========================
-# ANIMACIÓN
-# =========================
-def animacion(texto, color):
-
-    for letra in texto:
-        print(color + letra + RESET, end="", flush=True)
-        time.sleep(0.03)
-
-    print()
-
-# =========================
-# COLOR POR JUGADOR
-# =========================
-def colorear(valor):
-
-    if valor == "X":
-        return ROJO + valor + RESET
-
-    elif valor == "O":
-        return AZUL + valor + RESET
-
-    return CYAN + valor + RESET
-
-# =========================
-# MOSTRAR TABLERO
-# =========================
-def mostrar():
-
-    limpiar()
-
-    print(AMARILLO)
-    print("╔═══╦═══╦═══╗")
-
-    print(
-        f"║ {colorear(tablero[0])} ║ "
-        f"{colorear(tablero[1])} ║ "
-        f"{colorear(tablero[2])} ║"
-    )
-
-    print("╠═══╬═══╬═══╣")
-
-    print(
-        f"║ {colorear(tablero[3])} ║ "
-        f"{colorear(tablero[4])} ║ "
-        f"{colorear(tablero[5])} ║"
-    )
-
-    print("╠═══╬═══╬═══╣")
-
-    print(
-        f"║ {colorear(tablero[6])} ║ "
-        f"{colorear(tablero[7])} ║ "
-        f"{colorear(tablero[8])} ║"
-    )
-
-    print("╚═══╩═══╩═══╝")
-    print(RESET)
+botones = []
 
 # =========================
 # COMPROBAR VICTORIA
@@ -104,82 +50,169 @@ def victoria():
     for a, b, c in combinaciones:
 
         if tablero[a] == tablero[b] == tablero[c]:
+
+            botones[a].config(bg="#00c853")
+            botones[b].config(bg="#00c853")
+            botones[c].config(bg="#00c853")
+
             return True
 
     return False
 
 # =========================
-# ANIMACIÓN INICIAL
+# REINICIAR
 # =========================
-limpiar()
+def reiniciar():
 
-animacion("🎮 Cargando Tres en Raya...", VERDE)
+    global tablero, turno
 
-time.sleep(1)
+    tablero = ["1", "2", "3",
+               "4", "5", "6",
+               "7", "8", "9"]
+
+    turno = "X"
+
+    for i in range(9):
+
+        botones[i].config(
+            text=str(i + 1),
+            bg=COLOR_TABLERO,
+            fg=COLOR_NUMEROS,
+            state="normal"
+        )
+
+    texto_turno.config(
+        text="Turno: X",
+        fg=COLOR_X
+    )
 
 # =========================
-# BUCLE PRINCIPAL
+# JUGAR
 # =========================
-while True:
+def jugar(pos):
 
-    mostrar()
+    global turno
 
-    color_turno = ROJO if turno == "X" else AZUL
-
-    animacion(f"Turno de {turno}", color_turno)
-
-    try:
-        pos = int(input(CYAN + "Elige posición (1-9): " + RESET)) - 1
-
-        if pos < 0 or pos > 8:
-            animacion("❌ Posición inválida", ROJO)
-            time.sleep(1)
-            continue
-
-        if tablero[pos] in ["X", "O"]:
-            animacion("⚠ Casilla ocupada", AMARILLO)
-            time.sleep(1)
-            continue
-
-        # ANIMACIÓN DE JUGADA
-        animacion("Colocando ficha...", VERDE)
-
-        time.sleep(0.5)
+    if tablero[pos] not in ["X", "O"]:
 
         tablero[pos] = turno
 
-        # VICTORIA
+        color = COLOR_X if turno == "X" else COLOR_O
+
+        botones[pos].config(
+            text=turno,
+            fg="white",
+            bg=color
+        )
+
+        # GANADOR
         if victoria():
 
-            mostrar()
-
-            animacion(
-                f"🏆 ¡Gana {turno}!",
-                VERDE
+            messagebox.showinfo(
+                "Fin del juego",
+                f"¡Gana {turno}!"
             )
 
-            break
+            reiniciar()
+            return
 
         # EMPATE
         if all(x in ["X", "O"] for x in tablero):
 
-            mostrar()
-
-            animacion(
-                "🤝 ¡Empate!",
-                AMARILLO
+            messagebox.showinfo(
+                "Empate",
+                "¡Empate!"
             )
 
-            break
+            reiniciar()
+            return
 
         # CAMBIO DE TURNO
         turno = "O" if turno == "X" else "X"
 
-    except ValueError:
-
-        animacion(
-            "❌ Introduce un número válido",
-            ROJO
+        texto_turno.config(
+            text=f"Turno: {turno}",
+            fg=COLOR_X if turno == "X" else COLOR_O
         )
 
-        time.sleep(1)
+# =========================
+# TÍTULO
+# =========================
+titulo = tk.Label(
+    ventana,
+    text="TRES EN RAYA",
+    font=("Arial", 28, "bold"),
+    bg=COLOR_FONDO,
+    fg=COLOR_TABLERO
+)
+
+titulo.pack(pady=20)
+
+# =========================
+# TURNO
+# =========================
+texto_turno = tk.Label(
+    ventana,
+    text="Turno: X",
+    font=("Arial", 20, "bold"),
+    bg=COLOR_FONDO,
+    fg=COLOR_X
+)
+
+texto_turno.pack(pady=10)
+
+# =========================
+# TABLERO
+# =========================
+frame = tk.Frame(
+    ventana,
+    bg=COLOR_FONDO
+)
+
+frame.pack(pady=20)
+
+for i in range(9):
+
+    boton = tk.Button(
+        frame,
+        text=str(i + 1),
+        font=("Arial", 28, "bold"),
+        width=5,
+        height=2,
+        bg=COLOR_TABLERO,
+        fg=COLOR_NUMEROS,
+        activebackground="#ffe566",
+        relief="solid",
+        bd=4,
+        command=lambda i=i: jugar(i)
+    )
+
+    boton.grid(
+        row=i // 3,
+        column=i % 3,
+        padx=8,
+        pady=8
+    )
+
+    botones.append(boton)
+
+# =========================
+# BOTÓN REINICIAR
+# =========================
+btn_reiniciar = tk.Button(
+    ventana,
+    text="REINICIAR",
+    font=("Arial", 16, "bold"),
+    bg="#ff66cc",
+    fg="white",
+    padx=15,
+    pady=8,
+    command=reiniciar
+)
+
+btn_reiniciar.pack(pady=20)
+
+# =========================
+# EJECUTAR
+# =========================
+ventana.mainloop()
