@@ -222,6 +222,7 @@ for i in range(9):
     boton.grid(row=i//3, column=i%3, padx=8, pady=8)
     botones.append(boton)
 
+
 # =========================
 # EJECUTAR
 # =========================
