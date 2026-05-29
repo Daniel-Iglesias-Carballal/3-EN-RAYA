@@ -16,21 +16,27 @@ COLOR_TEXTO = "#ffffff"
 # =========================
 ventana = tk.Tk()
 ventana.title("Tres en Raya")
-ventana.geometry("500x650")
+ventana.attributes("-fullscreen", True)
 ventana.config(bg=COLOR_FONDO)
-ventana.resizable(False, False)
+
+def salir_pantalla(event=None):
+    ventana.attributes("-fullscreen", False)
+
+ventana.bind("<Escape>", salir_pantalla)
 
 # =========================
 # VARIABLES
 # =========================
-tablero = ["1", "2", "3",
-           "4", "5", "6",
-           "7", "8", "9"]
+tablero = ["1","2","3",
+           "4","5","6",
+           "7","8","9"]
 
 turno = "X"
 
 puntos_x = 0
 puntos_o = 0
+empates = 0
+partidas_totales = 0
 
 botones = []
 
@@ -40,72 +46,38 @@ botones = []
 def victoria():
 
     combinaciones = [
-        (0,1,2),
-        (3,4,5),
-        (6,7,8),
-        (0,3,6),
-        (1,4,7),
-        (2,5,8),
-        (0,4,8),
-        (2,4,6)
+        (0,1,2),(3,4,5),(6,7,8),
+        (0,3,6),(1,4,7),(2,5,8),
+        (0,4,8),(2,4,6)
     ]
 
     for a, b, c in combinaciones:
-
         if tablero[a] == tablero[b] == tablero[c]:
-
             botones[a].config(bg="#00c853")
             botones[b].config(bg="#00c853")
             botones[c].config(bg="#00c853")
-
             return True
 
     return False
 
 # =========================
-# ACTUALIZAR MARCADOR
+# ACTUALIZAR MARCADORES
 # =========================
 def actualizar_marcador():
 
-    marcador.config(
-        text=f"X: {puntos_x}   |   O: {puntos_o}"
-    )
-
-# =========================
-# REINICIAR
-# =========================
-def reiniciar():
-
-    global tablero, turno
-
-    tablero = ["1", "2", "3",
-               "4", "5", "6",
-               "7", "8", "9"]
-
-    turno = "X"
-
-    for i in range(9):
-
-        botones[i].config(
-            text=str(i + 1),
-            bg=COLOR_TABLERO,
-            fg=COLOR_NUMEROS,
-            state="normal"
-        )
-
-    texto_turno.config(
-        text="Turno: X",
-        fg=COLOR_X
-    )
+    marcador_x.config(text=f"X: {puntos_x}")
+    marcador_o.config(text=f"O: {puntos_o}")
+    texto_empates.config(text=f"Empates: {empates}")
+    texto_totales.config(text=f"Partidas Totales: {partidas_totales}")
 
 # =========================
 # JUGAR
 # =========================
 def jugar(pos):
 
-    global turno, puntos_x, puntos_o
+    global turno, puntos_x, puntos_o, empates, partidas_totales
 
-    if tablero[pos] not in ["X", "O"]:
+    if tablero[pos] not in ["X","O"]:
 
         tablero[pos] = turno
 
@@ -120,6 +92,8 @@ def jugar(pos):
         # GANADOR
         if victoria():
 
+            partidas_totales += 1
+
             if turno == "X":
                 puntos_x += 1
             else:
@@ -127,23 +101,20 @@ def jugar(pos):
 
             actualizar_marcador()
 
-            messagebox.showinfo(
-                "Fin del juego",
-                f"¡Gana {turno}!"
-            )
+            messagebox.showinfo("Fin del juego", f"¡Gana {turno}!")
 
-            reiniciar()
             return
 
         # EMPATE
-        if all(x in ["X", "O"] for x in tablero):
+        if all(x in ["X","O"] for x in tablero):
 
-            messagebox.showinfo(
-                "Empate",
-                "¡Empate!"
-            )
+            empates += 1
+            partidas_totales += 1
 
-            reiniciar()
+            actualizar_marcador()
+
+            messagebox.showinfo("Empate", "¡Empate!")
+
             return
 
         # CAMBIO DE TURNO
@@ -164,21 +135,55 @@ titulo = tk.Label(
     bg=COLOR_FONDO,
     fg=COLOR_TABLERO
 )
-
 titulo.pack(pady=20)
 
 # =========================
-# MARCADOR
+# PARTIDAS TOTALES
 # =========================
-marcador = tk.Label(
+texto_totales = tk.Label(
     ventana,
-    text="X: 0   |   O: 0",
-    font=("Arial", 20, "bold"),
+    text="Partidas Totales: 0",
+    font=("Arial", 18, "bold"),
     bg=COLOR_FONDO,
     fg="white"
 )
+texto_totales.pack(pady=5)
 
-marcador.pack(pady=10)
+# =========================
+# MARCADORES
+# =========================
+frame_marcadores = tk.Frame(ventana, bg=COLOR_FONDO)
+frame_marcadores.pack(pady=10)
+
+marcador_x = tk.Label(
+    frame_marcadores,
+    text="X: 0",
+    font=("Arial", 22, "bold"),
+    bg=COLOR_FONDO,
+    fg=COLOR_X
+)
+marcador_x.grid(row=0, column=0, padx=50)
+
+marcador_o = tk.Label(
+    frame_marcadores,
+    text="O: 0",
+    font=("Arial", 22, "bold"),
+    bg=COLOR_FONDO,
+    fg=COLOR_O
+)
+marcador_o.grid(row=0, column=1, padx=50)
+
+# =========================
+# EMPATES
+# =========================
+texto_empates = tk.Label(
+    ventana,
+    text="Empates: 0",
+    font=("Arial", 16, "bold"),
+    bg=COLOR_FONDO,
+    fg="#cccccc"
+)
+texto_empates.pack(pady=5)
 
 # =========================
 # TURNO
@@ -190,17 +195,12 @@ texto_turno = tk.Label(
     bg=COLOR_FONDO,
     fg=COLOR_X
 )
-
 texto_turno.pack(pady=10)
 
 # =========================
 # TABLERO
 # =========================
-frame = tk.Frame(
-    ventana,
-    bg=COLOR_FONDO
-)
-
+frame = tk.Frame(ventana, bg=COLOR_FONDO)
 frame.pack(pady=20)
 
 for i in range(9):
@@ -219,30 +219,8 @@ for i in range(9):
         command=lambda i=i: jugar(i)
     )
 
-    boton.grid(
-        row=i // 3,
-        column=i % 3,
-        padx=8,
-        pady=8
-    )
-
+    boton.grid(row=i//3, column=i%3, padx=8, pady=8)
     botones.append(boton)
-
-# =========================
-# BOTÓN REINICIAR
-# =========================
-btn_reiniciar = tk.Button(
-    ventana,
-    text="REINICIAR",
-    font=("Arial", 16, "bold"),
-    bg="#ff66cc",
-    fg="white",
-    padx=15,
-    pady=8,
-    command=reiniciar
-)
-
-btn_reiniciar.pack(pady=20)
 
 # =========================
 # EJECUTAR
