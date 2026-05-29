@@ -5,10 +5,10 @@ from tkinter import messagebox
 # COLORES
 # =========================
 COLOR_FONDO = "#1a1a1a"
-COLOR_TABLERO = "#ffd60a"   # amarillo
-COLOR_NUMEROS = "#ff66cc"   # rosa
-COLOR_X = "#ff3b30"         # rojo
-COLOR_O = "#3a86ff"         # azul
+COLOR_TABLERO = "#ffd60a"
+COLOR_NUMEROS = "#ff66cc"
+COLOR_X = "#ff3b30"
+COLOR_O = "#3a86ff"
 COLOR_TEXTO = "#ffffff"
 
 # =========================
@@ -16,7 +16,7 @@ COLOR_TEXTO = "#ffffff"
 # =========================
 ventana = tk.Tk()
 ventana.title("Tres en Raya")
-ventana.geometry("500x600")
+ventana.geometry("500x650")
 ventana.config(bg=COLOR_FONDO)
 ventana.resizable(False, False)
 
@@ -28,6 +28,9 @@ tablero = ["1", "2", "3",
            "7", "8", "9"]
 
 turno = "X"
+
+puntos_x = 0
+puntos_o = 0
 
 botones = []
 
@@ -58,6 +61,15 @@ def victoria():
             return True
 
     return False
+
+# =========================
+# ACTUALIZAR MARCADOR
+# =========================
+def actualizar_marcador():
+
+    marcador.config(
+        text=f"X: {puntos_x}   |   O: {puntos_o}"
+    )
 
 # =========================
 # REINICIAR
@@ -91,7 +103,7 @@ def reiniciar():
 # =========================
 def jugar(pos):
 
-    global turno
+    global turno, puntos_x, puntos_o
 
     if tablero[pos] not in ["X", "O"]:
 
@@ -107,6 +119,13 @@ def jugar(pos):
 
         # GANADOR
         if victoria():
+
+            if turno == "X":
+                puntos_x += 1
+            else:
+                puntos_o += 1
+
+            actualizar_marcador()
 
             messagebox.showinfo(
                 "Fin del juego",
@@ -147,6 +166,19 @@ titulo = tk.Label(
 )
 
 titulo.pack(pady=20)
+
+# =========================
+# MARCADOR
+# =========================
+marcador = tk.Label(
+    ventana,
+    text="X: 0   |   O: 0",
+    font=("Arial", 20, "bold"),
+    bg=COLOR_FONDO,
+    fg="white"
+)
+
+marcador.pack(pady=10)
 
 # =========================
 # TURNO
