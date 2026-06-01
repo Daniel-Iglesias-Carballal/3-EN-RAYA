@@ -71,13 +71,54 @@ def actualizar_marcador():
     texto_totales.config(text=f"Partidas Totales: {partidas_totales}")
 
 # =========================
+# NUEVA PARTIDA
+# (mantiene los marcadores)
+# =========================
+def nueva_partida():
+
+    global tablero, turno
+
+    tablero = ["1","2","3",
+               "4","5","6",
+               "7","8","9"]
+
+    turno = "X"
+
+    texto_turno.config(
+        text="Turno: X",
+        fg=COLOR_X
+    )
+
+    for i in range(9):
+        botones[i].config(
+            text=str(i + 1),
+            bg=COLOR_TABLERO,
+            fg=COLOR_NUMEROS
+        )
+
+# =========================
+# REINICIAR MARCADORES
+# =========================
+def reiniciar_marcadores():
+
+    global puntos_x, puntos_o, empates, partidas_totales
+
+    puntos_x = 0
+    puntos_o = 0
+    empates = 0
+    partidas_totales = 0
+
+    actualizar_marcador()
+    nueva_partida()
+
+# =========================
 # JUGAR
 # =========================
 def jugar(pos):
 
     global turno, puntos_x, puntos_o, empates, partidas_totales
 
-    if tablero[pos] not in ["X","O"]:
+    if tablero[pos] not in ["X", "O"]:
 
         tablero[pos] = turno
 
@@ -101,20 +142,28 @@ def jugar(pos):
 
             actualizar_marcador()
 
-            messagebox.showinfo("Fin del juego", f"¡Gana {turno}!")
+            messagebox.showinfo(
+                "Fin del juego",
+                f"¡Gana {turno}!"
+            )
 
+            nueva_partida()
             return
 
         # EMPATE
-        if all(x in ["X","O"] for x in tablero):
+        if all(x in ["X", "O"] for x in tablero):
 
             empates += 1
             partidas_totales += 1
 
             actualizar_marcador()
 
-            messagebox.showinfo("Empate", "¡Empate!")
+            messagebox.showinfo(
+                "Empate",
+                "¡Empate!"
+            )
 
+            nueva_partida()
             return
 
         # CAMBIO DE TURNO
@@ -152,7 +201,10 @@ texto_totales.pack(pady=5)
 # =========================
 # MARCADORES
 # =========================
-frame_marcadores = tk.Frame(ventana, bg=COLOR_FONDO)
+frame_marcadores = tk.Frame(
+    ventana,
+    bg=COLOR_FONDO
+)
 frame_marcadores.pack(pady=10)
 
 marcador_x = tk.Label(
@@ -200,7 +252,10 @@ texto_turno.pack(pady=10)
 # =========================
 # TABLERO
 # =========================
-frame = tk.Frame(ventana, bg=COLOR_FONDO)
+frame = tk.Frame(
+    ventana,
+    bg=COLOR_FONDO
+)
 frame.pack(pady=20)
 
 for i in range(9):
@@ -219,9 +274,30 @@ for i in range(9):
         command=lambda i=i: jugar(i)
     )
 
-    boton.grid(row=i//3, column=i%3, padx=8, pady=8)
+    boton.grid(
+        row=i // 3,
+        column=i % 3,
+        padx=8,
+        pady=8
+    )
+
     botones.append(boton)
 
+# =========================
+# BOTÓN REINICIAR
+# =========================
+boton_reiniciar = tk.Button(
+    ventana,
+    text="Reiniciar Marcadores",
+    font=("Arial", 18, "bold"),
+    bg="#ff9500",
+    fg="white",
+    padx=20,
+    pady=10,
+    command=reiniciar_marcadores
+)
+
+boton_reiniciar.pack(pady=20)
 
 # =========================
 # EJECUTAR
